@@ -1,0 +1,25 @@
+from flask import Flask, request, jsonify
+import openai
+
+app = Flask(__name__)
+
+# Load OpenAI API key
+openai.api_key = "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"
+
+
+@app.route('/completion')
+def completion():
+    prompt = request.args.get('prompt')
+    response = openai.Completion.create(
+        engine="davinci",
+        prompt=prompt,
+        max_tokens=100,
+        n=1,
+        stop=None,
+        temperature=0.5
+    )
+    return jsonify({'response': response.choices[0].text.strip()})
+
+
+if __name__ == '__main__':
+    app.run(debug=True, host='0.0.0.0', port=5002)

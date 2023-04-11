@@ -1,10 +1,12 @@
+import os
+
 from flask import Flask, request, jsonify
 import openai
 
 app = Flask(__name__)
 
 # Load OpenAI API key
-openai.api_key = "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"
+openai.api_key = os.environ.get('OPENAI_API_KEY')
 
 
 @app.route('/completion')

@@ -1,0 +1,30 @@
+pipeline {
+    agent any
+    environment {
+        dockerImageName = "shehan97105/completionservice"
+        dockerImage = null
+    }
+    stages{
+        stage('Deploy to Devrlopment Enviornment') {
+                steps {
+                    script {
+                         kubernetesDeploy(configs: 'completiondev.yml', kubeconfigId:'kubernetesconfigpwd')
+                        }
+                    }
+                }
+        stage('Deploy to Test Enviornment') {
+                steps {
+                    script {
+                         kubernetesDeploy(configs: 'completiontest.yml', kubeconfigId:'kubernetesconfigpwd')
+                        }
+                }
+        }
+        stage('Deploy to Production Enviornment') {
+                steps {
+                    script {
+                         kubernetesDeploy(configs: 'completionprod.yml', kubeconfigId:'kubernetesconfigpwd')
+                        }
+                    }
+        }
+    }
+}

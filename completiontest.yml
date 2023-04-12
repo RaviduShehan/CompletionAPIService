@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+   name: completionapi-test
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: completionapi-test
+  template:
+    metadata:
+      labels:
+        app: completionapi-test
+    spec:
+      containers:
+      - name: completionapi-test
+        image: shehan97105/completionservice:latest
+        ports:
+        - containerPort: 5002
+

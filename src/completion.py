@@ -1,8 +1,5 @@
-import os
+
 from datetime import datetime
-import mysql.connector
-from flask import Flask, request, jsonify
-import openai
 import os
 from flask import Flask, request, jsonify
 import openai

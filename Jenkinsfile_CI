@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        dockerImageName = "shehan97105/completionservice"
+        dockerImageName = "shehan97105/completionservice:${GIT_COMMIT}"
         dockerImage = null
     }
     stages {

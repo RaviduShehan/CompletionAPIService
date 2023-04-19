@@ -1,30 +1,76 @@
+    def readManifestFile(file) {
+        return readFile(file).trim()
+ }
 pipeline {
     agent any
     environment {
-        dockerImageName = "shehan97105/completionservice"
-        dockerImage = null
+        DOCKERIMAGE = "${params.DOCKER_IMAGE_NAME}"
+        kubeconfigId = "${params.KUBECONFIG_ID}"
+
+        gkeClusterName = "openai-api-cluster"
+        gkeZone = "us-central1-c"
+        gkeCredentialsId = "apiservicesauth"
+        NAMESPACE_ID="dev"
+        DEPLOYMENT_ID="completionapi"
     }
     stages{
-        stage('Deploy to Devrlopment Enviornment') {
-                steps {
-                    script {
-                         kubernetesDeploy(configs: 'completiondev.yml', kubeconfigId:'kubernetesconfigpwd')
-                        }
-                    }
+         stage('Get docker Image'){
+           steps {
+                script {
+                    echo "Docker image name: ${DOCKERIMAGE}"
+                    echo "Namespce: ${NAMESPACE_ID}"
+                    echo "DEPLOYMENT_ID: ${DEPLOYMENT_ID}"
                 }
-        stage('Deploy to Test Enviornment') {
-                steps {
-                    script {
-                         kubernetesDeploy(configs: 'completiontest.yml', kubeconfigId:'kubernetesconfigpwd')
-                        }
-                }
+            }
+
         }
-        stage('Deploy to Production Enviornment') {
-                steps {
-                    script {
-                         kubernetesDeploy(configs: 'completionprod.yml', kubeconfigId:'kubernetesconfigpwd')
+        stage('Replace values in manifest file') {
+            steps {
+                script {
+                            def manifest = readManifestFile('completion.yml')
+                            manifest = manifest.replaceAll('DEPLOYMENT_NAME', "${DEPLOYMENT_ID}")
+                            manifest = manifest.replaceAll('NAMESPACE', "${NAMESPACE_ID}")
+                            manifest =manifest.replaceAll('dockerImageName',"${DOCKERIMAGE}")
+                            writeFile file: 'completion.yml', text: manifest
                         }
                     }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    if (NAMESPACE_ID == 'dev') {
+                        echo "Deploy to Dev Env"
+                        step([
+                            $class: 'KubernetesEngineBuilder',
+                            projectId: 'apiservices-384122',
+                            credentialsId: gkeCredentialsId,
+                            clusterName: gkeClusterName,
+                            location: gkeZone,
+                            manifestPattern: 'completion.yml'
+                        ])
+                    } else if (NAMESPACE_ID == 'test') {
+                        echo "Deploy to Test Env"
+                        step([
+                            $class: 'KubernetesEngineBuilder',
+                            projectId: 'apiservices-384122',
+                            credentialsId: gkeCredentialsId,
+                            clusterName: gkeClusterName,
+                            location: gkeZone,
+                            manifestPattern: 'completion.yml'
+                        ])
+                    } else if (NAMESPACE_ID == 'prod') {
+                        echo "Deploy to Prod Env"
+                        step([
+                            $class: 'KubernetesEngineBuilder',
+                            projectId: 'apiservices-384122',
+                            credentialsId: gkeCredentialsId,
+                            clusterName: gkeClusterName,
+                            location: gkeZone,
+                            manifestPattern: 'completion.yml'
+                        ])
+                    }
+                }
+            }
         }
     }
 }

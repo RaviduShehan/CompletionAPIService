@@ -1,6 +1,7 @@
-    def readManifestFile(file) {
-        return readFile(file).trim()
- }
+def readManifestFile(file) {
+    return readFile(file).trim()
+}
+
 pipeline {
     agent any
     environment {
@@ -14,62 +15,72 @@ pipeline {
         DEPLOYMENT_ID="completionapi"
     }
     stages{
-         stage('Get docker Image'){
-           steps {
+        stage('Get docker Image'){
+            steps {
                 script {
                     echo "Docker image name: ${DOCKERIMAGE}"
-                    echo "Namespce: ${NAMESPACE_ID}"
+                    echo "Namespace: ${NAMESPACE_ID}"
                     echo "DEPLOYMENT_ID: ${DEPLOYMENT_ID}"
                 }
             }
-
         }
         stage('Replace values in manifest file') {
             steps {
                 script {
-                            def manifest = readManifestFile('completion.yml')
-                            manifest = manifest.replaceAll('DEPLOYMENT_NAME', "${DEPLOYMENT_ID}")
-                            manifest = manifest.replaceAll('NAMESPACE', "${NAMESPACE_ID}")
-                            manifest =manifest.replaceAll('dockerImageName',"${DOCKERIMAGE}")
-                            writeFile file: 'completion.yml', text: manifest
-                        }
-                    }
-        }
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    if (NAMESPACE_ID == 'dev') {
-                        echo "Deploy to Dev Env"
-                        step([
-                            $class: 'KubernetesEngineBuilder',
-                            projectId: 'apiservices-384122',
-                            credentialsId: gkeCredentialsId,
-                            clusterName: gkeClusterName,
-                            location: gkeZone,
-                            manifestPattern: 'completion.yml'
-                        ])
-                    } else if (NAMESPACE_ID == 'test') {
-                        echo "Deploy to Test Env"
-                        step([
-                            $class: 'KubernetesEngineBuilder',
-                            projectId: 'apiservices-384122',
-                            credentialsId: gkeCredentialsId,
-                            clusterName: gkeClusterName,
-                            location: gkeZone,
-                            manifestPattern: 'completion.yml'
-                        ])
-                    } else if (NAMESPACE_ID == 'prod') {
-                        echo "Deploy to Prod Env"
-                        step([
-                            $class: 'KubernetesEngineBuilder',
-                            projectId: 'apiservices-384122',
-                            credentialsId: gkeCredentialsId,
-                            clusterName: gkeClusterName,
-                            location: gkeZone,
-                            manifestPattern: 'completion.yml'
-                        ])
-                    }
+                    def manifest = readManifestFile('completion.yml')
+                    manifest = manifest.replaceAll('DEPLOYMENT_NAME', "${DEPLOYMENT_ID}")
+                    manifest = manifest.replaceAll('NAMESPACE', "${NAMESPACE_ID}")
+                    manifest = manifest.replaceAll('dockerImageName',"${DOCKERIMAGE}")
+                    writeFile file: 'completion.yml', text: manifest
                 }
+            }
+        }
+        stage('Deploy to Dev Environment') {
+            when {
+                expression { NAMESPACE_ID == 'dev' }
+            }
+            steps {
+                echo "Deploy to Dev Env"
+                step([
+                    $class: 'KubernetesEngineBuilder',
+                    projectId: 'apiservices-384122',
+                    credentialsId: gkeCredentialsId,
+                    clusterName: gkeClusterName,
+                    location: gkeZone,
+                    manifestPattern: 'completion.yml'
+                ])
+            }
+        }
+        stage('Deploy to Test Environment') {
+            when {
+                expression { NAMESPACE_ID == 'test' }
+            }
+            steps {
+                echo "Deploy to Test Env"
+                step([
+                    $class: 'KubernetesEngineBuilder',
+                    projectId: 'apiservices-384122',
+                    credentialsId: gkeCredentialsId,
+                    clusterName: gkeClusterName,
+                    location: gkeZone,
+                    manifestPattern: 'completion.yml'
+                ])
+            }
+        }
+        stage('Deploy to Prod Environment') {
+            when {
+                expression { NAMESPACE_ID == 'prod' }
+            }
+            steps {
+                echo "Deploy to Prod Env"
+                step([
+                    $class: 'KubernetesEngineBuilder',
+                    projectId: 'apiservices-384122',
+                    credentialsId: gkeCredentialsId,
+                    clusterName: gkeClusterName,
+                    location: gkeZone,
+                    manifestPattern: 'completion.yml'
+                ])
             }
         }
     }

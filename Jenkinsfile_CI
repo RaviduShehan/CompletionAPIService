@@ -10,9 +10,13 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/RaviduShehan/CompletionAPIService']]])
             }
         }
-        stage('Run Postman Test Suite') {
+        stage('Install Newman') {
             steps {
                 bat 'npm install -g newman'
+                }
+                }
+        stage('Run Postman Test Suite') {
+            steps {
                 bat 'C:\\Users\\Ravidu\\AppData\\Roaming\\npm\\newman run CompletionAPITestSuite.json'
             }
         }

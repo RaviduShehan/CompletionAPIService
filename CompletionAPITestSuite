@@ -1,0 +1,97 @@
+{
+	"info": {
+		"_postman_id": "def6ecfc-dd56-44da-9582-210b4b7f19bd",
+		"name": "CompletionAPI Test suite",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "25119759"
+	},
+	"item": [
+		{
+			"name": "Test Missing prompt parameter",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {\r",
+							"    pm.response.to.have.status(400);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Prompt parameter is missing\", function () {\r",
+							"    pm.expect(pm.response.json()).to.deep.equal({\r",
+							"        \"error\": \"Prompt parameter is missing\"\r",
+							"    });\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://34.132.224.27/completion/",
+					"protocol": "http",
+					"host": [
+						"34",
+						"132",
+						"224",
+						"27"
+					],
+					"path": [
+						"completion",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Successful request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response is a string\", function () {\r",
+							"    pm.expect(pm.response.json()).to.have.property('response').that.is.a('string');\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://34.132.224.27/completion?prompt=Once%2C%20upon%20a%20time%3F",
+					"protocol": "http",
+					"host": [
+						"34",
+						"132",
+						"224",
+						"27"
+					],
+					"path": [
+						"completion"
+					],
+					"query": [
+						{
+							"key": "prompt",
+							"value": "Once%2C%20upon%20a%20time%3F"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

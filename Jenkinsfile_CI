@@ -17,7 +17,7 @@ pipeline {
                 }
         stage('Run Postman Test Suite') {
             steps {
-                bat 'C:\\Users\\Ravidu\\AppData\\Roaming\\npm\\newman run CompletionAPITestSuite.json'
+                bat 'C:\\Users\\Ravidu\\AppData\\Roaming\\npm\\newman run completionapitestsuite.json'
             }
         }
         stage('Build Docker Image') {

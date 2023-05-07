@@ -5,7 +5,7 @@ def readManifestFile(file) {
 pipeline {
     agent any
     environment {
-        DOCKERIMAGE = "${params.DOCKER_IMAGE_NAME}"
+        DOCKERIMAGE = "shehan97105/completionservice:${GIT_COMMIT}"
         kubeconfigId = "${params.KUBECONFIG_ID}"
 
         gkeClusterName = "openai-api-cluster"
@@ -18,19 +18,18 @@ pipeline {
             steps {
                 script {
                     echo "Docker image name: ${DOCKERIMAGE}"
-                    echo "DEPLOYMENT_ID: ${DEPLOYMENT_ID}"
                 }
             }
         }
-        stage('Deploy to Dev Environment') {
+         stage('Deploy to Test Environment') {
             steps {
-                echo "Deploy to Dev Env"
-                 script {
+                script {
                     def manifest = readManifestFile('completion.yml')
                     manifest = manifest.replaceAll('DEPLOYMENT_NAME', "${DEPLOYMENT_ID}")
-                    manifest = manifest.replaceAll('NAMESPACE', "dev")
+                    manifest = manifest.replaceAll('NAMESPACE',"test" )
                     manifest = manifest.replaceAll('dockerImageName',"${DOCKERIMAGE}")
-                    writeFile file: 'completiondev.yml', text: manifest
+                    writeFile file: 'completiontest.yml', text: manifest
+
                 }
                 step([
                     $class: 'KubernetesEngineBuilder',
@@ -38,10 +37,9 @@ pipeline {
                     credentialsId: gkeCredentialsId,
                     clusterName: gkeClusterName,
                     location: gkeZone,
-                    manifestPattern: 'completiondev.yml'
+                    manifestPattern: 'completiontest.yml'
                 ])
             }
         }
-
-}
+    }
 }
